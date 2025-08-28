@@ -1,0 +1,17 @@
+{
+  "cxxNamespace": ["nitroandroidpip"],
+  "ios": {
+    "iosModuleName": "NitroAndroidPip"
+  },
+  "android": {
+    "androidNamespace": ["nitroandroidpip"],
+    "androidCxxLibName": "nitroandroidpip"
+  },
+  "autolinking": {
+    "NitroAndroidPip": {
+      "swift": "NitroAndroidPip",
+      "kotlin": "NitroAndroidPip"
+    }
+  },
+  "ignorePaths": ["node_modules"]
+}
