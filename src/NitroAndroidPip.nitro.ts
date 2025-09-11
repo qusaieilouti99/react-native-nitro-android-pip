@@ -1,42 +1,53 @@
 import type { HybridObject } from 'react-native-nitro-modules';
 
 export type IPipAction = {
+  /** unique identifier for the action (used by native) */
   id: string;
+  /** resource name for the icon (native drawable / resource) */
   iconResourceName: string;
+  /** visible title for the action button */
   title: string;
+  /** accessibility description */
   contentDescription: string;
+  /** callback invoked when the action is pressed in the PiP UI */
   onPress: () => void;
 };
 
 export type IAspectRatio = {
+  /** width component of the aspect ratio */
   width: number;
+  /** height component of the aspect ratio */
   height: number;
 };
 
 export type ISourceRectHint = {
+  /** left pixel coordinate (window/screen coordinates) */
   left: number;
+  /** top pixel coordinate (window/screen coordinates) */
   top: number;
+  /** right pixel coordinate (window/screen coordinates) */
   right: number;
+  /** bottom pixel coordinate (window/screen coordinates) */
   bottom: number;
 };
 
 export type IPipOptions = {
   /**
    * Aspect ratio for the PiP window.
-   * Default: { width: 16, height: 9 }
+   * Default: { width: 16, height: 9 } when omitted on native side.
    */
   aspectRatio?: IAspectRatio;
 
   /**
-   * Defines which part of your screen should be visible in PiP for smoother animations.
+   * Rectangle hint for the source area on screen to use for smoother
+   * PiP animations (optional).
    */
   sourceRectHint?: ISourceRectHint;
 
   /**
-   * If true, the library will automatically enter PiP when the user navigates away.
-   * - On Android 12+, this uses the native `autoEnterEnabled` system feature.
-   * - On older versions, this uses the `onUserLeaveHint` callback as a reliable fallback.
-   * You must still forward the `onUserLeaveHint` event from your MainActivity for this to work.
+   * If true, the module will attempt to auto-enter PiP when the user leaves the activity.
+   * - On Android 12+, this uses native auto-enter.
+   * - On older versions it uses onUserLeaveHint fallback.
    * Default: false
    */
   autoEnterEnabled?: boolean;
@@ -45,38 +56,44 @@ export type IPipOptions = {
 export interface NitroAndroidPip
   extends HybridObject<{ ios: 'swift'; android: 'kotlin' }> {
   /**
-   * Configures or updates the Picture-in-Picture parameters.
-   * Call this when a call starts to "prime" the PiP settings.
-   * If PiP is already active, calling this will update the window's appearance and actions live.
-   * @param options The visual options for the PiP window.
-   * @param actions An array of up to 3 actions (buttons) to display in the PiP window.
+   * Configure or update PiP parameters.
+   * - `actions` can include up to 3 action items; their `onPress` callbacks
+   *   are called by native on the main/UI thread.
+   * - Passing `undefined` for options leaves native defaults in place.
    */
   setPipOptions(options?: IPipOptions, actions?: IPipAction[]): void;
 
   /**
-   * Manually enters Picture-in-Picture mode using the last configured options.
-   * Throws an error if the activity is not in a state where PiP can be entered.
+   * Enter PiP mode using the last configured options.
+   * Throws on native if the Activity is not able to enter PiP.
    */
   startPip(): void;
 
   /**
-   * Manually exits Picture-in-Picture mode by bringing the app to the foreground.
+   * Exit PiP mode and bring the app to foreground.
    */
   stopPip(): void;
 
   /**
-   * Checks if the device supports Picture-in-Picture.
+   * Returns whether the device supports PiP.
    */
   isPipSupported(): boolean;
 
   /**
-   * Checks if the app is currently in Picture-in-Picture mode.
+   * Returns whether the app is currently in PiP mode.
    */
   isPipActive(): boolean;
 
   /**
-   * Adds a listener to be notified of PiP mode changes.
-   * @returns A function to remove the listener.
+   * Add a PiP state listener. This method returns void; use removePipListener()
+   * to unregister the listener.
+   *
+   * The callback will be invoked on the main/UI thread from native.
    */
-  addPipListener(callback: (isPipActive: boolean) => void): () => void;
+  addPipListener(callback: (isPipActive: boolean) => void): void;
+
+  /**
+   * Remove the registered PiP listener.
+   */
+  removePipListener(): void;
 }
